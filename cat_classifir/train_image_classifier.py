@@ -275,7 +275,7 @@ def _get_init_fn():
   if FLAGS.checkpoint_path is None:
     return None
 
-  # train_dirにチェックポイントが存在する場合、ユーザーに警告します。 とにかくチェックポイントを無視します。
+ 
   if tf.train.latest_checkpoint(FLAGS.train_dir):
     tf.logging.info(
         'Ignoring --checkpoint_path because a checkpoint already exists in %s'
@@ -398,7 +398,7 @@ def main(_):
     # Define the model #
     ####################
     def clone_fn(batch_queue):
-      """network_fnの複数のクローンを作成してデータの並列処理を可能にする."""
+     
       images, labels = batch_queue.dequeue()
       logits, end_points = network_fn(images)
 
@@ -419,8 +419,7 @@ def main(_):
 
     clones = model_deploy.create_clones(deploy_config, clone_fn, [batch_queue])
     first_clone_scope = deploy_config.clone_scope(0)
-    # 最初のクローンからupdate_opsを収集します。 これらには、
-    #たとえば、network_fnによって作成されたbatch_norm変数の更新が含まれます。
+    
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, first_clone_scope)
 
     # Add summaries for end_points.
@@ -458,7 +457,7 @@ def main(_):
       summaries.add(tf.summary.scalar('learning_rate', learning_rate))
 
     if FLAGS.sync_replicas:
-      # sync_replicasが有効な場合、平均化はチーフ・キュー・ランナーで行われます。
+      
       optimizer = tf.train.SyncReplicasOptimizer(
           opt=optimizer,
           replicas_to_aggregate=FLAGS.replicas_to_aggregate,
@@ -466,7 +465,7 @@ def main(_):
           variable_averages=variable_averages,
           variables_to_average=moving_average_variables)
     elif FLAGS.moving_average_decay:
-      # トレーナーがローカルで実行するopsを更新します。
+     
       update_ops.append(variable_averages.apply(moving_average_variables))
 
     # Variables to train.
@@ -489,8 +488,7 @@ def main(_):
     with tf.control_dependencies([update_op]):
       train_tensor = tf.identity(total_loss, name='train_op')
 
-    # 最初のクローンから要約を追加します。 これらには、model_fnとoptimize_clones（）
-    #または_gather_clone_loss（）のいずれかによって作成された要約が含まれています。
+    
     summaries |= set(tf.get_collection(tf.GraphKeys.SUMMARIES,
                                        first_clone_scope))
 
