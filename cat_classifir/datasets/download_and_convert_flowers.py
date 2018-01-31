@@ -14,7 +14,6 @@ import dataset_utils
 # The URL where the Flowers data can be downloaded.
 _DATA_URL = 'http://download.tensorflow.org/example_images/flower_photos.tgz'
 
-# 検証セット内のイメージの数。
 _NUM_VALIDATION = 60
 
 # Seed for repeatability.
@@ -145,7 +144,6 @@ def run(dataset_dir):
   training_filenames = photo_filenames[_NUM_VALIDATION:]
   validation_filenames = photo_filenames[:_NUM_VALIDATION]
 
-  # まず、トレーニングセットと検証セットを変換します。
   _convert_dataset('train', training_filenames, class_names_to_ids,
                    dataset_dir)
   _convert_dataset('validation', validation_filenames, class_names_to_ids,
