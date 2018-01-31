@@ -149,7 +149,6 @@ def run(dataset_dir):
   _convert_dataset('validation', validation_filenames, class_names_to_ids,
                    dataset_dir)
 
-  # 最後に、ラベルファイルを作成します。
   labels_to_class_names = dict(zip(range(len(class_names)), class_names))
   dataset_utils.write_label_file(labels_to_class_names, dataset_dir)
 
