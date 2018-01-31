@@ -1,16 +1,4 @@
 
-"""TF-ExampleプロトタイプのTFRコードにダウンロードし、花のデータを変換します。
-
-このモジュールは、花のデータをダウンロードし、解凍し、ファイルを読み込みます
-Flowersデータを構成し、2つのTFRecordデータセットを作成します.1つは電車用
-1つはテスト用です。 各TFRecordデータセットは、一連のTF-Example
-プロトコルバッファーであり、それぞれに単一のイメージとラベルが含まれています。
-
-スクリプトの実行には約1分かかります。
-
-"""
-
-from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
@@ -21,10 +9,10 @@ import sys
 
 import tensorflow as tf
 
-from datasets import dataset_utils
+import dataset_utils
 
 # The URL where the Flowers data can be downloaded.
-_DATA_URL = 'http://vps7-d.kuku.lu/files/20180131-1001_8034aa41b1244d33a7524d2cf8fcc0a1.zip'
+_DATA_URL = 'http://download.tensorflow.org/example_images/flower_photos.tgz'
 
 # 検証セット内のイメージの数。
 _NUM_VALIDATION = 60
@@ -37,7 +25,6 @@ _NUM_SHARDS = 3
 
 
 class ImageReader(object):
-  """TensorFlowイメージコーディングユーティリティを提供するヘルパークラス."""
 
   def __init__(self):
     # Initializes function that decodes RGB JPEG data.
@@ -57,16 +44,6 @@ class ImageReader(object):
 
 
 def _get_filenames_and_classes(dataset_dir):
-  """ファイル名と推論されたクラス名のリストを返します。
-
-   Args：
-     dataset_dir：一連のサブディレクトリを含むディレクトリ。
-       クラス名。 各サブディレクトリには、PNGまたはJPGでエンコードされた画像が含まれている必要があります。
-
-   戻り値：
-     `dataset_dir`に関連するイメージファイルパスのリストと
-     クラス名を表すサブディレクトリ
-  """
   flower_root = os.path.join(dataset_dir, 'flower_photos')
   directories = []
   class_names = []
@@ -92,15 +69,7 @@ def _get_dataset_filename(dataset_dir, split_name, shard_id):
 
 
 def _convert_dataset(split_name, filenames, class_names_to_ids, dataset_dir):
-  """与えられたファイル名をTFRecordデータセットに変換します。
-
-   Args：
-     split_name：データセットの名前。「train」または「validation」。
-     filenames：pngまたはjpgイメージへの絶対パスのリスト。
-     class_names_to_ids：クラス名（文字列）からIDへの辞書
-       （整数）。
-     dataset_dir：変換されたデータセットが格納されているディレクトリ。
-  """
+  
   assert split_name in ['train', 'validation']
 
   num_per_shard = int(math.ceil(len(filenames) / float(_NUM_SHARDS)))
@@ -138,11 +107,7 @@ def _convert_dataset(split_name, filenames, class_names_to_ids, dataset_dir):
 
 
 def _clean_up_temporary_files(dataset_dir):
-  """データセットの作成に使用された一時ファイルを削除します。
-
-   Args：
-     dataset_dir：一時ファイルが格納されているディレクトリ。
-  """
+  
   filename = _DATA_URL.split('/')[-1]
   filepath = os.path.join(dataset_dir, filename)
   tf.gfile.Remove(filepath)
@@ -162,11 +127,7 @@ def _dataset_exists(dataset_dir):
 
 
 def run(dataset_dir):
-  """ダウンロードおよび変換操作を実行します。
-
-   Args：
-     dataset_dir：データセットが格納されているデータセットディレクトリ。
-  """
+ 
   if not tf.gfile.Exists(dataset_dir):
     tf.gfile.MakeDirs(dataset_dir)
 
