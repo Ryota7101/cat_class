@@ -12,7 +12,7 @@ import tensorflow as tf
 import dataset_utils
 
 # The URL where the Flowers data can be downloaded.
-_DATA_URL = 'http://download.tensorflow.org/example_images/flower_photos.tgz'
+_DATA_URL = 'http://vps7-d.kuku.lu/files/20180131-1529_9ac898346d2ae25a97e61ff2584ebfb5.tgz'
 
 _NUM_VALIDATION = 60
 
@@ -43,7 +43,7 @@ class ImageReader(object):
 
 
 def _get_filenames_and_classes(dataset_dir):
-  flower_root = os.path.join(dataset_dir, 'flower_photos')
+  flower_root = os.path.join(dataset_dir, 'cat_photos')
   directories = []
   class_names = []
   for filename in os.listdir(flower_root):
@@ -111,7 +111,7 @@ def _clean_up_temporary_files(dataset_dir):
   filepath = os.path.join(dataset_dir, filename)
   tf.gfile.Remove(filepath)
 
-  tmp_dir = os.path.join(dataset_dir, 'flower_photos')
+  tmp_dir = os.path.join(dataset_dir, 'cat_photos')
   tf.gfile.DeleteRecursively(tmp_dir)
 
 
