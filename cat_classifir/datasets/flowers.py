@@ -31,8 +31,6 @@ def get_split(split_name, dataset_dir, file_pattern=None, reader=None):
     file_pattern = _FILE_PATTERN
   file_pattern = os.path.join(dataset_dir, file_pattern % split_name)
 
-  # 署名でNoneを許可すると、dataset_factoryはデフォルトを使用できます。
-  if reader is None:
     reader = tf.TFRecordReader
 
   keys_to_features = {
