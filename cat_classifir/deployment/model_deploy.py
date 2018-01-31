@@ -1,98 +1,3 @@
-# Copyright 2016 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-"""スリムモデルを複数のクローンとレプリカに展開する
-
-＃TODO（sguada）docstring paragraph（a）ファイルの必要性を促し、
-＃（b）クローンを定義する。
-
-＃TODO（sguada）は、モデル展開の上位レベルのコンポーネントを記述します。
-＃各モデルの展開は、DeploymentConfig、
-＃A、B、Cをキャプチャする＃、データを読み込むinput_fnなど
-
-複数のGPU上または複数のマシン間で簡単にモデルをトレーニングするには、
-モジュールはヘルパ関数のセットを提供します： `create_clones`、
-`optimize_clones`と` deploy`です。
-
-使用法：
-
-  g = tf.Graph（）
-
-  ＃DeploymentConfigを設定する
-  config = model_deploy.DeploymentConfig（num_clones = 2、clone_on_cpu = True）
-
-  ＃変数を格納しているデバイスにグローバルなステップを作成します。
-  tf.device（config.variables_device（））を使って：
-    global_step = slim.create_global_step（）
-
-  ＃入力を定義する
-  tf.device（config.inputs_device（））を使用して：
-    画像、ラベル= LoadData（...）
-    inputs_queue = slim.data.prefetch_queue（（画像、ラベル））
-
-  ＃オプティマイザを定義します。
-  tf.device（config.optimizer_device（））を使用して：
-    optimizer = tf.train.MomentumOptimizer（FLAGS.learning_rate、FLAGS.momentum）
-
-  ＃損失を含むモデルを定義します。
-  def model_fn（inputs_queue）：
-    画像、ラベル= inputs_queue.dequeue（）
-    予測= CreateNetwork（画像）
-    slim.losses.log_loss（予測、ラベル）
-
-  model_dp = model_deploy.deploy（config、model_fn、[inputs_queue]、
-                                 オプティマイザ=オプティマイザ）
-
-  ＃トレーニングを実行します。
-  slim.learning.train（model_dp.train_op、my_log_dir、
-                      summary_op = model_dp.summary_op）
-
-Cloneのnamedtupleには、各呼び出しに関連付けられた値がまとめられています
-model_fn：
-  * outputs： `model_fn（）`への呼び出しの戻り値。
-  * scope：クローンの作成に使用されたスコープ。
-  *デバイス：クローンの作成に使用されたデバイス。
-
-DeployedModel namedtupleは、複数のトレーニングに必要な値
-クローン：
-  * train_op：オプティマイザのトレーニングopを実行し、
-    `model_fn`によって作成されたすべての更新操作。オプティマイザ
-    指定されました。
-  * summary_op： `model_fn`によって作成された要約を実行する操作
-    およびprocess_gradients。
-  * total_loss：「テンソル」は、
-    `model_fn`に正則化損失を加えたものです。
-  * clones： `create_clones（）`によって返される `Clone`タプルのリストです。
-
-DeploymentConfigパラメータ：
-  * num_clones：各レプリカにデプロイするモデル・クローンの数。
-  * clone_on_cpu：クローンをCPU上に配置する必要がある場合はtrue。
-  * replica_id：整数。モデルが存在するレプリカのインデックス
-      配備された。チーフレプリカは通常0です。
-  * num_replicas：使用するレプリカの数。
-  * num_ps_tasks： `ps`ジョブのタスク数。レプリカを使用しない場合は0にします。
-  * worker_job_name：ワーカー・ジョブの名前。
-  * ps_job_name：パラメーター・サーバー・ジョブの名前。
-
-TODO（sguada）：
-   - グラフに副作用を記述する。
-   - 要約とupdate_opsには何が起こりますか？
-   - グラフのコレクションが変更されています。
-   - これを使用する方法についてのチュートリアルを書く。
-   - 複数回の呼び出しを呼び出す可能性を分析する。
-
-"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -114,14 +19,12 @@ __all__ = ['create_clones',
           ]
 
 
-# Namedtupleは、デプロイ時にクローンを表すために使用されます。
 Clone = collections.namedtuple('Clone',
-                               ['outputs',  # model_fn（）が返すものは何でも。
+                               ['outputs',  
                                 'scope',  # The scope used to create it.
                                 'device',  # The device used to create.
                                ])
 
-# DeployedModelを表すために使用されるNamedtuple。deploy（）によって返されます。
 DeployedModel = collections.namedtuple('DeployedModel',
                                        ['train_op',  # The `train_op`
                                         'summary_op',  # The `summary_op`
@@ -129,7 +32,7 @@ DeployedModel = collections.namedtuple('DeployedModel',
                                         'clones',  # A list of `Clones` tuples.
                                        ])
 
-# DeploymentConfigのデフォルトパラメータ
+
 _deployment_params = {'num_clones': 1,
                       'clone_on_cpu': False,
                       'replica_id': 0,
@@ -140,43 +43,7 @@ _deployment_params = {'num_clones': 1,
 
 
 def create_clones(config, model_fn, args=None, kwargs=None):
-  """`model_fn`を使用して、設定に従って複数のクローンを作成します。
-
-  `model_fn（* args、** kwargs）`の戻り値は、
-  名前付きタプルで作成するために使用されたスコープとデバイス
-  `クローン（出力、範囲、デバイス）`
-
-  注： `model_fn`によって生成された損失は、
-  tf.GraphKeys.LOSSESコレクション。
-
-  クローンを使用して作成した損失、要約、またはupdate_opsを回復するには：
-  `` `python
-    losses = tf.get_collection（tf.GraphKeys.LOSSES、clone.scope）
-    集計= tf.get_collection（tf.GraphKeys.SUMMARIES、clone.scope）
-    update_ops = tf.get_collection（tf.GraphKeys.UPDATE_OPS、clone.scope）
-  `` ``
-
-  展開オプションは、configオブジェクトとサポートによって指定されます
-  1つまたは複数のクローンを異なるGPUと1つまたは複数のレプリカに展開する
-  そのようなクローンの
-
-  引数 `model_fn`は` config.num_clones`と呼ばれ、
-  モデルクローンは `model_fn（* args、** kwargs）`となります。
-
-  `config`が複数のレプリカでデプロイメントを指定する場合、デフォルト
-  tensorflowデバイスは、 `model_fn`への呼び出しごとに適切に設定され、
-  スリムな変数作成関数：モデルとグローバル変数が作成されます
-  psデバイス上では、クローン操作は `worker`デバイス上にあります。
-
-  Args：
-    config：DeploymentConfigオブジェクト。
-    model_fn：呼び出し可能です。 `model_fn（* args、** kwargs）`と呼ばれます。
-    args： `model_fn`に渡す引数のオプションリスト。
-    kwargs： `model_fn`に渡すキーワード引数のオプションリスト。
-
-  戻り値：
-    名前付きタプル `Clone`のリスト。
-  """
+  
   clones = []
   args = args or []
   kwargs = kwargs or {}
@@ -195,17 +62,7 @@ def create_clones(config, model_fn, args=None, kwargs=None):
 
 
 def _gather_clone_loss(clone, num_clones, regularization_losses):
-  """単一のクローンの損失を集めます。
-
-   Args：
-     クローン：クローン名タプル。
-     num_clones：デプロイされているクローンの数。
-     regularization_losses：regularization_lossesの空のリスト
-       クローンロスを増やす。
-
-   戻り値：
-     クローンの総損失のテンソル。 Noneでもかまいません。
-  """
+  
   # The return value.
   sum_loss = None
   # 要約が必要な損失の個々のコンポーネント。
@@ -237,22 +94,7 @@ def _gather_clone_loss(clone, num_clones, regularization_losses):
 
 def _optimize_clone(optimizer, clone, num_clones, regularization_losses,
                     **kwargs):
-  """1つのクローンの損失と勾配を計算します。
-
-   Args：
-     オプティマイザ：tf.Optimizerオブジェクト。
-     クローン：クローン名タプル。
-     num_clones：デプロイされているクローンの数。
-     regularization_losses：regularization_lossesの空のリスト
-       クローンロスを増やす。
-     ** kwargs：compute_gradients（）に渡すkwargの辞書。
-
-   戻り値：
-     タプル（clone_loss、clone_grads_and_vars）。
-       - clone_loss：クローンの総損失のテンソル。 Noneでもかまいません。
-       - clone_grads_and_vars：クローンの（勾配、変数）のリスト。
-         空でもかまいません。
-  """
+  
   sum_loss = _gather_clone_loss(clone, num_clones, regularization_losses)
   clone_grad = None
   if sum_loss is not None:
@@ -264,26 +106,7 @@ def _optimize_clone(optimizer, clone, num_clones, regularization_losses,
 def optimize_clones(clones, optimizer,
                     regularization_losses=None,
                     **kwargs):
-  """クローンの所与のリストのクローン損失および勾配を計算する。
-
-   注：regularization_lossesは最初のクローン損失に追加されます。
-
-   Args：
-    clones： `create_clones（）`によって作成された `Clone`のリストです。
-    optimizer： `Optimizer`オブジェクトです。
-    regularization_losses：オプションの正規化損失のリスト。 Noneならば
-      tf.GraphKeys.REGULARIZATION_LOSSESからそれらを集めます。 `[]`を
-      それらを除外する。
-    ** kwargs： `compute_gradients`に渡すキーワード引数のオプションリスト。
-
-   戻り値：
-    タプル（total_loss、grads_and_vars）。
-      - total_loss：クローン損失の平均を含むTensor
-        正則化の損失。
-      - grads_and_vars：合計を含むタプル（勾配、変数）のリスト
-        各変数の勾配の
-
-  """
+  
   grads_and_vars = []
   clones_losses = []
   num_clones = len(clones)
@@ -312,36 +135,7 @@ def deploy(config,
            kwargs=None,
            optimizer=None,
            summarize_gradients=False):
-  """スリムなモデルを複数のクローンに展開します。
-
-  展開オプションは、configオブジェクトとサポートによって指定されます
-  1つまたは複数のクローンを異なるGPUと1つまたは複数のレプリカに展開する
-  そのようなクローンの
-
-  引数 `model_fn`は` config.num_clones`と呼ばれ、
-  モデルクローンは `model_fn（* args、** kwargs）`となります。
-
-  オプションの引数 `optimizer`は` Optimizer`オブジェクトです。 `None`でなければ、
-  配置されたモデルは、そのオプティマイザでトレーニングするように構成されています。
-
-  `config`が複数のレプリカでデプロイメントを指定する場合、デフォルト
-  tensorflowデバイスは、 `model_fn`への呼び出しごとに適切に設定され、
-  スリムな変数作成関数：モデルとグローバル変数が作成されます
-  psデバイス上では、クローン操作は `worker`デバイス上にあります。
-
-  Args：
-    config： `DeploymentConfig`オブジェクトです。
-    model_fn：呼び出し可能です。 `model_fn（* args、** kwargs）`と呼ばれます。
-    args： `model_fn`に渡す引数のオプションリスト。
-    kwargs： `model_fn`に渡すキーワード引数のオプションリスト。
-    optimizer：オプションの `Optimizer`オブジェクトです。渡された場合、モデルがデプロイされます
-      そのオプティマイザを使用したトレーニング用です。
-    summarize_gradients：グラディエントにサマリーを追加するかどうか。
-
-  戻り値：
-    `DeployedModel`名前付きタプルです。
-
-  """
+  
   # Gather initial summaries.
   summaries = set(tf.get_collection(tf.GraphKeys.SUMMARIES))
 
