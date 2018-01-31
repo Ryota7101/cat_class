@@ -1,10 +1,4 @@
 
-"""花のデータセットのデータを提供します。
-
-データセットの作成に使用されるデータセットスクリプトは、次の場所にあります。
-テンソルフロー/モデル/研究/スリム/データセット/ download_and_convert_flowers.py
-"""
-
 #from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -29,22 +23,7 @@ _ITEMS_TO_DESCRIPTIONS = {
 
 
 def get_split(split_name, dataset_dir, file_pattern=None, reader=None):
-  """花を読み取るための指示を含むデータセットタプルを取得します。
-
-   Args：
-     split_name：列車/検証の分割名。
-     dataset_dir：データセットソースのベースディレクトリ。
-     file_pattern：データセットソースと一致するときに使用するファイルパターン。
-       パターンに '％s'文字列が含まれていると仮定して、分割
-       名前を挿入できます。
-     reader：TensorFlowリーダータイプ。
-
-   戻り値：
-     `Dataset`名前付きタプル。
-
-   発生する：
-     ValueError： `split_name`が有効な列車/検証分割でない場合。
-  """
+  
   if split_name not in SPLITS_TO_SIZES:
     raise ValueError('split name %s was not recognized.' % split_name)
 
@@ -83,3 +62,15 @@ def get_split(split_name, dataset_dir, file_pattern=None, reader=None):
       items_to_descriptions=_ITEMS_TO_DESCRIPTIONS,
       num_classes=_NUM_CLASSES,
       labels_to_names=labels_to_names)
+© 2018 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+API
+Training
+Shop
+Blog
+About
