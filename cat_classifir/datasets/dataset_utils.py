@@ -1,18 +1,4 @@
-# Copyright 2016 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-"""データセットのダウンロードと変換のためのユーティリティが含まれています."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -78,12 +64,7 @@ def image_to_tfexample(image_data, image_format, height, width, class_id):
 
 
 def download_and_uncompress_tarball(tarball_url, dataset_dir):
-  """`tarball_url`をダウンロードし、ローカルで解凍します。
-
-   Args：
-     tarball_url：tarballファイルのURL。
-     dataset_dir：一時ファイルが格納されているディレクトリ。
-  """
+ 
   filename = tarball_url.split('/')[-1]
   filepath = os.path.join(dataset_dir, filename)
 
@@ -100,13 +81,6 @@ def download_and_uncompress_tarball(tarball_url, dataset_dir):
 
 def write_label_file(labels_to_class_names, dataset_dir,
                      filename=LABELS_FILENAME):
-  """クラス名のリストを含むファイルを書き込みます。
-
-   Args：
-     labels_to_class_names：クラス名に対する（整数）ラベルのマップ。
-     dataset_dir：ラベルファイルを書き込むディレクトリ。
-     filename：クラス名が書かれているファイル名。
-  """
   labels_filename = os.path.join(dataset_dir, filename)
   with tf.gfile.Open(labels_filename, 'w') as f:
     for label in labels_to_class_names:
@@ -115,28 +89,12 @@ def write_label_file(labels_to_class_names, dataset_dir,
 
 
 def has_labels(dataset_dir, filename=LABELS_FILENAME):
-  """データセットディレクトリにラベルマップファイルが含まれているかどうかを指定します。
-
-   Args：
-     dataset_dir：ラベルファイルが存在するディレクトリ。
-     filename：クラス名が書かれているファイル名。
-
-   戻り値：
-     ラベルファイルが存在する場合は `True`、それ以外の場合は` False`です。
-  """
+  
   return tf.gfile.Exists(os.path.join(dataset_dir, filename))
 
 
 def read_label_file(dataset_dir, filename=LABELS_FILENAME):
-  """ラベルファイルを読み込み、IDからクラス名へのマッピングを返します。
-
-   Args：
-     dataset_dir：ラベルファイルが存在するディレクトリ。
-     filename：クラス名が書かれているファイル名。
-
-   戻り値：
-     ラベル（整数）からクラス名へのマップ。
-  """
+  
   labels_filename = os.path.join(dataset_dir, filename)
   with tf.gfile.Open(labels_filename, 'rb') as f:
     lines = f.read().decode()
