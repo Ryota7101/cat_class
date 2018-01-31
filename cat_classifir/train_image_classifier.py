@@ -1,6 +1,4 @@
 
-"""与えられたデータセットを使ってモデルを訓練する一般的な訓練スクリプト."""
-
 from __future__ import division
 from __future__ import print_function
 
@@ -202,18 +200,7 @@ FLAGS = tf.app.flags.FLAGS
 
 
 def _configure_learning_rate(num_samples_per_epoch, global_step):
-  """学習率を設定します。
-
-   Args：
-     num_samples_per_epoch：トレーニングの各エポックにおけるサンプル数。
-     global_step：global_stepテンソル。
-
-   戻り値：
-     学習率を表す「テンソル」。
-
-   発生する：
-     ValueError：if
-  """
+ 
   decay_steps = int(num_samples_per_epoch / FLAGS.batch_size *
                     FLAGS.num_epochs_per_decay)
   if FLAGS.sync_replicas:
@@ -242,17 +229,7 @@ def _configure_learning_rate(num_samples_per_epoch, global_step):
 
 
 def _configure_optimizer(learning_rate):
-  """トレーニングに使用するオプティマイザを設定します。
-
-   Args：
-     learning_rate：スカラーまたは「テンソル」学習率。
-
-   戻り値：
-     オプティマイザのインスタンス。
-
-   発生する：
-     ValueError：FLAGS.optimizerが認識されない場合。
-  """
+  
   if FLAGS.optimizer == 'adadelta':
     optimizer = tf.train.AdadeltaOptimizer(
         learning_rate,
@@ -294,14 +271,7 @@ def _configure_optimizer(learning_rate):
 
 
 def _get_init_fn():
-  """チーフワーカーが実行してトレーニングを開始する関数を返します。
-
-   init_fnは、モデルを初期化するときにのみ実行されることに注意してください
-   最初のグローバルなステップ。
-
-   戻り値：
-     スーパーバイザが実行するinit関数。
-  """
+  
   if FLAGS.checkpoint_path is None:
     return None
 
@@ -342,11 +312,7 @@ def _get_init_fn():
 
 
 def _get_variables_to_train():
-  """訓練する変数のリストを返します。
-
-   戻り値：
-     オプティマイザによって訓練される変数のリスト。
-  """
+  
   if FLAGS.trainable_scopes is None:
     return tf.trainable_variables()
   else:
